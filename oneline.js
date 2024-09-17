@@ -1,16 +1,21 @@
-import {Peer} from "https://esm.sh/peerjs@1.5.4?bundle-deps"
-
-class Oneline
-{
+class Oneline {
     #peerId = "";
     #visitorCount = 1;
     #peer = null;
     #connections = new Map();
     #eventListeners = [];
-    constructor(peerId){
+    constructor(peerId) {
+        this.init(peerId);
+
+        return this;
+    }
+
+    async init(peerId) {
+        const { Peer } = await import('https://esm.sh/peerjs@1.5.4?bundle-deps');
+
         this.#peerId = peerId;
         this.#peer = new Peer();
-        
+
         this.#peer.on('open', (id) => {
             if (id !== this.#peerId) {
                 this.#connectToPeer(this.#peerId);
@@ -41,28 +46,26 @@ class Oneline
             this.#connections.forEach(conn => conn.close());
             this.#peer.destroy();
         });
-      
-      return this;
     }
 
     on(eventName, callback) {
         if (!this.#eventListeners[eventName]) {
-          this.#eventListeners[eventName] = [];
+            this.#eventListeners[eventName] = [];
         }
         this.#eventListeners[eventName].push(callback);
     }
 
     #triggerEvent(eventName, detail) {
         if (this.#eventListeners[eventName]) {
-          this.#eventListeners[eventName].forEach(callback => {
-            callback({ detail });
-          });
+            this.#eventListeners[eventName].forEach(callback => {
+                callback({ detail });
+            });
         }
     }
 
     #updateVisitorCount() {
-        this.#triggerEvent("OnelineUpdate",{
-                count:this.#visitorCount
+        this.#triggerEvent("OnelineUpdate", {
+            count: this.#visitorCount
         });
     }
 
@@ -102,9 +105,10 @@ class Oneline
 }
 
 export default Oneline;
+if (typeof window !== 'undefined') {
+    window.Oneline = Oneline;
+}
 
-/*
-new Oneline("using-a-z-and-0-9-to-make-a-unique-id-for-your-website").on("OnelineUpdate",(e)=>{
-  document.querySelector("#visitor-count").innerText = e.detail.count;
-})
-*/
+// new Oneline("using-a-z-and-0-9-to-make-a-unique-id-for-your-website").on("OnelineUpdate", (e) => {
+//     document.querySelector("#visitor-count").innerText = e.detail.count;
+// })
