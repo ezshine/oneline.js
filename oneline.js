@@ -22,8 +22,9 @@
     
         async init(peerId) {
             const { Peer } = await import('https://esm.sh/peerjs@1.5.4?bundle-deps');
+            const { v5: uuidv5 } = await import('https://esm.sh/uuid@10.0.0?bundle-deps');
     
-            this.#peerId = peerId;
+            this.#peerId = uuidv5(peerId, uuidv5.URL);
             this.#peer = new Peer();
     
             this.#peer.on('open', (id) => {
